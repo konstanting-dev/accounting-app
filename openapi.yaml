@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: Swagger Accounting APP - OpenAPI 3.0
+  description: |-
+    This is an OpenAPI 3.0 specification of Accounting APP
+  version: 1.0.0
+servers:
+  - url: https://localhost:8000
+tags:
+  - name: accounts
+
+paths:
+  /accounts:
+    get:
+      tags:
+        - accounts
+      summary: Finds accounts with pagination and optional search query
+      description: Search query is represented by field and value fields. Supports only full match
+      operationId: listAccounts
+      parameters:
+        - name: page
+          in: query
+          description: Number of the page to query
+          required: true
+          schema:
+            type: number
+        - name: perPage
+          in: query
+          description: Size of the page to query
+          required: true
+          schema:
+            type: number
+        - name: field
+          in: query
+          description: Field name to filter accounts
+          schema:
+            type: string
+        - name: value
+          in: query
+          description: Field value to filter accounts
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+        "422":
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "500":
+          description: Server issue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorResponse"
+    post:
+      tags:
+        - accounts
+      summary: Creates new account
+      description: Creates new account
+      operationId: addAccount
+      requestBody:
+        description: Creates new account
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountData"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Account already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorResponse"
+        "422":
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "500":
+          description: Server issue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorResponse"
+  /accounts/count:
+    get:
+      tags:
+        - accounts
+      summary: Gets count of accounts by search query
+      description: Gets count of accounts by search query
+      operationId: getAccountsCount
+      parameters:
+        - name: field
+          in: query
+          description: Field name
+          example: "number"
+          schema:
+            type: string
+        - name: value
+          in: query
+          description: Field value
+          example: "1234567"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  collectionName:
+                    type: string
+        "422":
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "500":
+          description: Server issue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerErrorResponse"
+
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "test"
+        number:
+          type: string
+          example: "223433545"
+        name:
+          type: string
+          example: "test account name"
+        iban:
+          type: string
+          example: "223433545"
+        address:
+          type: string
+          example: "test address"
+        amount:
+          type: integer
+          format: int64
+          example: 100000
+        type:
+          type: string
+          description: Type of account
+          example: SENDING
+          enum:
+            - SENDING
+            - RECEIVING
+    AccountData:
+      type: object
+      properties:
+        number:
+          type: string
+          example: "223433545"
+        name:
+          type: string
+          example: "test account name"
+        iban:
+          type: string
+          example: "223433545"
+        address:
+          type: string
+          example: "test address"
+        amount:
+          type: integer
+          format: int64
+          example: 100000
+        type:
+          type: string
+          description: Type of account
+          example: SENDING
+          enum:
+            - SENDING
+            - RECEIVING
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+    ServerErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
